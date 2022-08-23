@@ -1,9 +1,38 @@
 <?php 
 
-require './vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
+
 
 use \XRPLWin\XRPL\Client;
 use \XRPLWin\XRPLOrderbookReader\LiquidityCheck;
+use Amp\Parallel\Worker;
+use Amp\Promise;
+
+function doRequest(string $url): string
+{
+    return 'test';
+}
+
+$trade = []; $options = [];
+$client = new Client([
+  'endpoint_reporting_uri' => 'https://xrplcluster.com'
+]);
+
+$promises = [
+  //Worker\enqueueCallable( 'Amp\Serialization\encodeUnprintableChars', 'asd'),
+  Worker\enqueueCallable( 'XRPLWin\XRPLOrderbookReader\fetchBook',false,$trade,$options,$client),
+  //Worker\enqueueCallable( 'XRPLWin\XRPLOrderbookReader\BookFetcher::fetchBook',false,$trade,$options,$client),
+  //Worker\enqueueCallable( '\\XRPLWin\\XRPLOrderbookReader\\BookFetcher::fetchBook',true, $trade, $options, $client),
+  //Worker\enqueueCallable('\XRPLWin\XRPLOrderbookReader\BookFetcher::fetchBook', false, $this->trade, $this->options, $this->client),
+];
+
+
+$responses = Promise\wait(Promise\all($promises));
+dump($responses);
+
+return;
+
+
 
 $client = new Client([
   'endpoint_reporting_uri' => 'https://xrplcluster.com'

@@ -14,7 +14,10 @@
   "autoload": {
     "psr-4": {
         "XRPLWin\\XRPLOrderbookReader\\": "src/"
-    }
+    },
+    "files": [
+      "src/functions.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {
@@ -26,7 +29,9 @@
   "require": {
     "php": "^8.1.0",
     "xrplwin/xrpl": "^0",
-    "brick/math": "^0.10.2"
+    "brick/math": "^0.10.2",
+    "amphp/parallel": "^1.4",
+    "amphp/parallel-functions": "^1.1"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5",

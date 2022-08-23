@@ -4,9 +4,14 @@ namespace XRPLWin\XRPLOrderbookReader;
 use XRPLWin\XRPL\Client as XRPLWinClient;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
-use GuzzleHttp\Promise as P;
-use GuzzleHttp\Promise\Promise;
-use GuzzleHttp\Promise\EachPromise;
+#use GuzzleHttp\Promise as P;
+#use GuzzleHttp\Promise\Promise;
+#use GuzzleHttp\Promise\EachPromise;
+use Amp\Parallel\Worker;
+use Amp\Promise;
+use function Amp\ParallelFunctions\parallelMap;
+use function Amp\Promise\wait;
+use Amp\Parallel\Worker\DefaultPool;
 
 class LiquidityCheck
 {
@@ -108,12 +113,58 @@ class LiquidityCheck
     return $promise;
   }
 
+  
   /**
    * Fetches orderbook and reverse orderbook then calculates exchange rate, checks for errors.
    * @return array [rate,safe,errors]
    */
   public function get(): array
   {
+    //https://github.com/amphp/parallel/issues/130#issuecomment-813536102
+    /*for ($i = 0; $i < 30; $i++) {
+        $pool = new DefaultPool();
+
+        $promises = parallelMap(range(1, 50), function () {
+            return 2;
+        }, $pool);
+
+        $result = wait($promises);
+    }
+    exit;*/
+
+    $urls = [
+        'https://secure.php.net',
+        'https://amphp.org',
+        'https://github.com',
+    ];
+
+    $trade = $this->trade;
+    $options = $this->options;
+    $client = $this->client;
+
+    /*$a =  new \Opis\Closure\SerializableClosure(function($trade, $options, $client){
+      return \XRPLWin\XRPLOrderbookReader\BookFetcher::fetchBook(false, $trade, $options, $client);
+    });*/
+    /*\Laravel\SerializableClosure\SerializableClosure::setSecretKey('secret');
+    $a = new \Laravel\SerializableClosure\SerializableClosure(function($trade, $options, $client){
+      return \XRPLWin\XRPLOrderbookReader\BookFetcher::fetchBook(false, $trade, $options, $client);
+    });*/
+
+    $promises = [
+      Worker\enqueueCallable( '\\XRPLWin\\XRPLOrderbookReader\\BookFetcher::fetchBook',false, $trade, $options, $client),
+      Worker\enqueueCallable( '\\XRPLWin\\XRPLOrderbookReader\\BookFetcher::fetchBook',true, $trade, $options, $client),
+      //Worker\enqueueCallable('\XRPLWin\XRPLOrderbookReader\BookFetcher::fetchBook', false, $this->trade, $this->options, $this->client),
+    ];
+
+    $responses = Promise\wait(Promise\all($promises));
+    dump($responses);
+    exit;
+    foreach ($responses as $url => $response) {
+        \printf("Read %d bytes from %s\n", \strlen($response), $url);
+    }
+    exit;
+    ################### END
+
     //READ: https://medium.com/@ardanirohman/how-to-handle-async-request-concurrency-with-promise-in-guzzle-6-cac10d76220e
 
 
