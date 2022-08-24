@@ -30,7 +30,8 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5",
-    "symfony/var-dumper": "^6.1"
+    "symfony/var-dumper": "^6.1",
+    "psr/http-client": "^1.0"
   },
   "scripts": {
     "test": "./vendor/bin/phpunit --testdox"

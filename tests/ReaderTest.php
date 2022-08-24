@@ -1,12 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Tests;
+namespace XRPLWin\XRPLOrderbookReader\Tests;
 
 use PHPUnit\Framework\TestCase;
-#use GuzzleHttp\Handler\MockHandler;
-#use GuzzleHttp\HandlerStack;
-#use GuzzleHttp\Psr7\Response;
-#use XRPLWin\XRPL\Client\Guzzle\HttpClient;
 use \XRPLWin\XRPL\Client;
 use \XRPLWin\XRPLOrderbookReader\LiquidityCheck;
 
@@ -23,12 +19,11 @@ final class ReaderTest extends TestCase
             'from' => [
                 'currency' => 'XRP'
             ],
+            'amount' => 20,
             'to' => [
                 'currency' => 'USD',
                 'issuer' => 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq'
-            ],
-            'amount' => 20,
-            'limit' => 500
+            ]
         ],
         [
             # Options:
@@ -75,8 +70,7 @@ final class ReaderTest extends TestCase
             'to' => [
                 'currency' => 'USD',
                 'issuer' => 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq'
-            ],
-            'limit' => 100
+            ]
         ],
         [
             # Options:
@@ -84,7 +78,8 @@ final class ReaderTest extends TestCase
             'maxSpreadPercentage' => 0.0001,
             'maxSlippagePercentage' => 0.0001,
             'maxSlippagePercentageReverse' => 0.0001,
-            'includeBookData' => false
+            'includeBookData' => false,
+            'maxBookLines' => 100
         ],
         $client);
 
@@ -114,8 +109,7 @@ final class ReaderTest extends TestCase
             'to' => [
                 'currency' => 'USD',
                 'issuer' => 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq'
-            ],
-            'limit' => 100
+            ]
         ],
         [
             # Options:
@@ -123,7 +117,8 @@ final class ReaderTest extends TestCase
             'maxSpreadPercentage' => 2,
             'maxSlippagePercentage' => 2,
             'maxSlippagePercentageReverse' => 2,
-            'includeBookData' => false
+            'includeBookData' => false,
+            'maxBookLines' => 100
         ],
         $client);
 

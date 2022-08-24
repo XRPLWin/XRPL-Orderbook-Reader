@@ -5,13 +5,6 @@ use XRPLWin\XRPL\Client as XRPLWinClient;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use GuzzleHttp\Promise as P;
-use GuzzleHttp\Promise\Promise;
-use GuzzleHttp\Promise\EachPromise;
-#use Amp\Parallel\Worker;
-#use Amp\Promise;
-#use function Amp\ParallelFunctions\parallelMap;
-#use function Amp\Promise\wait;
-#use Amp\Parallel\Worker\DefaultPool;
 
 class LiquidityCheck
 {
@@ -95,11 +88,6 @@ class LiquidityCheck
    */
   public function get(): array
   {
-
-
-
-    $then = microtime(true);
-
     $orderbook = $this->fetchBook();
     $orderbookReverse = $this->fetchBook();
 
@@ -107,16 +95,8 @@ class LiquidityCheck
       'fwd' => $orderbook->requestAsync(),
       'rev' => $orderbookReverse->requestAsync()
     ];
-   
-    $each = new EachPromise($promises, [
-      //'concurrency' => 5,
-      'fulfilled' => function ($response,$index) use (&$called) { $called++; dump($response); },
-      'rejected' => function($reason) use (&$rejected) {$rejected++;}
-    ]);
-    //$results = P\Utils::inspectAll( $promises );
-    //dump($results);exit;
+
     $promiseResults = P\Utils::all($promises)->wait();//$each->promise()->wait(); //see unwrap
-    //$promiseResults = $each->promise()->wait();
 
     $orderbook->fill($promiseResults['fwd']);
     $orderbookReverse->fill($promiseResults['rev']);
@@ -132,7 +112,6 @@ class LiquidityCheck
 
     if(!$orderbookReverse->isSuccess()) {
       //XRPL response is returned but field result.status did not return 'success'
-
       if(isset($orderbookReverse->result()->result->error_message))
         throw new \Exception($orderbookReverse->result()->result->error_message);
       else
@@ -142,8 +121,6 @@ class LiquidityCheck
     $book = $orderbook->finalResult(); //array response from ledger
     $bookReverse = $orderbook->finalResult(); //array response from ledger
     
-   
-
     $book1 = LiquidityParser::parse($book,        $this->trade['from'], $this->trade['to'], $this->trade['amount'], $this->options['rates']);
     $book2 = LiquidityParser::parse($bookReverse, $this->trade['from'], $this->trade['to'], $this->trade['amount'], ($this->options['rates'] == 'to' ? 'from':'to'));
     //dump($book1,$book2);
@@ -182,7 +159,7 @@ class LiquidityCheck
    * Returns Promise to query book_offers
    * @return XRPLWin\XRPL\Api\Methods\BookOffers
    */
-  private function fetchBook(bool $reverse = false)
+  public function fetchBook(bool $reverse = false)
   {
     if($this->trade['from'] === $this->trade['to'])
       return;
@@ -209,113 +186,6 @@ class LiquidityCheck
 
     return $orderbook;
   }
-
-  /**
-   * Queries XRPL and gets results of book_offers
-   * Note that book_offers does not have pagination built in.
-   * Fills $this->book or $this->bookReverse (if $reverse = true)
-   * @throws \XRPLWin\XRPL\Exceptions\XWException
-   * @return void
-   */
-  /*public static function fetchBook($reverse = false, array $trade, array $options, $client)
-  {
-    if($trade['from'] === $trade['to'])
-      return;
-
-    if(!$reverse) {
-      $from = $trade['from'];
-      $to = $trade['to'];
-    } else {
-      $from = $trade['to'];
-      $to = $trade['from'];
-    }
-    
-
-    $orderbook = $client->api('book_offers')->params([
-      'taker_gets' => $to,
-      'taker_pays' => $from,
-      'limit' => $options['maxBookLines']
-    ]);
-
-    try {
-      $orderbook->send();
-    } catch (\XRPLWin\XRPL\Exceptions\XWException $e) {
-        // Handle errors
-        throw $e;
-    }
-
-    if(!$orderbook->isSuccess()) {
-      //XRPL response is returned but field result.status did not return 'success'
-
-      if(isset($orderbook->result()->result->error_message))
-        throw new \Exception($orderbook->result()->result->error_message);
-      else
-        throw new \Exception(\json_encode($orderbook->result()));
-      return;
-    }
-    return $orderbook->finalResult(); //array response from ledger 
-  }*/
-
-  /**
-   * Queries XRPL and gets results of book_offers
-   * Note that book_offers does not have pagination built in.
-   * Fills $this->book or $this->bookReverse (if $reverse = true)
-   * @throws \XRPLWin\XRPL\Exceptions\XWException
-   * @return void
-   */
-  /*private function fetchBook($reverse = false)
-  {
-    if($this->trade['from'] === $this->trade['to'])
-      return;
-
-    //prevent re-querying
-    if(!$reverse && $this->bookExecuted) 
-      return;
-    else if($this->bookReverseExecuted)
-      return;
-
-    if(!$reverse) {
-      $from = $this->trade['from'];
-      $to = $this->trade['to'];
-    } else {
-      $from = $this->trade['to'];
-      $to = $this->trade['from'];
-    }
-    
-
-    // @var \XRPLWin\XRPL\Methods\BookOffers 
-    $orderbook = $this->client->api('book_offers')->params([
-      'taker_gets' => $to,
-      'taker_pays' => $from,
-      'limit' => $this->options['maxBookLines']
-    ]);
-
-    try {
-      $orderbook->send();
-    } catch (\XRPLWin\XRPL\Exceptions\XWException $e) {
-        // Handle errors
-        throw $e;
-    }
-
-    if(!$orderbook->isSuccess()) {
-      //XRPL response is returned but field result.status did not return 'success'
-
-      if(isset($orderbook->result()->result->error_message))
-        throw new \Exception($orderbook->result()->result->error_message);
-      else
-        throw new \Exception(\json_encode($orderbook->result()));
-      return;
-    }
-
-    if(!$reverse) {
-      $this->book = $orderbook->finalResult(); //array response from ledger
-      $this->bookExecuted = true;
-      
-    } else {
-      $this->bookReverse = $orderbook->finalResult(); //array response from ledger
-      $this->bookReverseExecuted = true;
-    }
-  }*/
 
   /**
    * Detects errors
