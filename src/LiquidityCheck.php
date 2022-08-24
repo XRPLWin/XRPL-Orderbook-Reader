@@ -4,14 +4,14 @@ namespace XRPLWin\XRPLOrderbookReader;
 use XRPLWin\XRPL\Client as XRPLWinClient;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
-#use GuzzleHttp\Promise as P;
-#use GuzzleHttp\Promise\Promise;
-#use GuzzleHttp\Promise\EachPromise;
-use Amp\Parallel\Worker;
-use Amp\Promise;
-use function Amp\ParallelFunctions\parallelMap;
-use function Amp\Promise\wait;
-use Amp\Parallel\Worker\DefaultPool;
+use GuzzleHttp\Promise as P;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\EachPromise;
+#use Amp\Parallel\Worker;
+#use Amp\Promise;
+#use function Amp\ParallelFunctions\parallelMap;
+#use function Amp\Promise\wait;
+#use Amp\Parallel\Worker\DefaultPool;
 
 class LiquidityCheck
 {
@@ -40,7 +40,6 @@ class LiquidityCheck
    *    'from' => ['currency' => 'USD', 'issuer' (optional if XRP) => 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq'],
    *    'to'   => ['currency' => 'EUR', 'issuer' (optional if XRP) => 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq'],
    *    'amount' => 500,
-   *    'limit' => 200
    * ]
    */
   private array $trade;
@@ -50,12 +49,11 @@ class LiquidityCheck
     'maxSpreadPercentage' => 4, //4
     'maxSlippagePercentage' => 3, //3
     'maxSlippagePercentageReverse' => 3, //3
-    'includeBookData' => false
+    'includeBookData' => false,
+    'maxBookLines' => 500
   ];
 
   private array $options;
-  private array $book;
-  private array $bookReverse;
   private bool $bookExecuted = false;
   private bool $bookReverseExecuted = false;
   
@@ -90,29 +88,6 @@ class LiquidityCheck
     $this->options = $options;
   }
 
-  public function fetchBookPromise($reverse = false)
-  {
-    $trade = $this->trade;
-    $options = $this->options;
-    $client = $this->client;
-    //($reverse = false, array $trade, array $options, $client)
-    $promise = new Promise(
-      function() use (&$promise,$reverse,$trade,$options,$client) {
-        
-        #$response = self::fetchBook($reverse,$trade,$options,$client);
-        #$promise->resolve($response);
-        sleep(5);
-        $promise->resolve(\date('Y-m-d H:i:s'));
-      }//,
-      //function (&$promise) {
-        // do something that will cancel the promise computation (e.g., close
-        // a socket, cancel a database query, etc...)
-        //$promise->reject(null); // just to know which index has failed or rejected.
-      //}
-    );
-    return $promise;
-  }
-
   
   /**
    * Fetches orderbook and reverse orderbook then calculates exchange rate, checks for errors.
@@ -120,101 +95,17 @@ class LiquidityCheck
    */
   public function get(): array
   {
-    //https://github.com/amphp/parallel/issues/130#issuecomment-813536102
-    /*for ($i = 0; $i < 30; $i++) {
-        $pool = new DefaultPool();
-
-        $promises = parallelMap(range(1, 50), function () {
-            return 2;
-        }, $pool);
-
-        $result = wait($promises);
-    }
-    exit;*/
-
-    $urls = [
-        'https://secure.php.net',
-        'https://amphp.org',
-        'https://github.com',
-    ];
-
-    $trade = $this->trade;
-    $options = $this->options;
-    $client = $this->client;
-
-    /*$a =  new \Opis\Closure\SerializableClosure(function($trade, $options, $client){
-      return \XRPLWin\XRPLOrderbookReader\BookFetcher::fetchBook(false, $trade, $options, $client);
-    });*/
-    /*\Laravel\SerializableClosure\SerializableClosure::setSecretKey('secret');
-    $a = new \Laravel\SerializableClosure\SerializableClosure(function($trade, $options, $client){
-      return \XRPLWin\XRPLOrderbookReader\BookFetcher::fetchBook(false, $trade, $options, $client);
-    });*/
-
-    $promises = [
-      Worker\enqueueCallable( '\\XRPLWin\\XRPLOrderbookReader\\BookFetcher::fetchBook',false, $trade, $options, $client),
-      Worker\enqueueCallable( '\\XRPLWin\\XRPLOrderbookReader\\BookFetcher::fetchBook',true, $trade, $options, $client),
-      //Worker\enqueueCallable('\XRPLWin\XRPLOrderbookReader\BookFetcher::fetchBook', false, $this->trade, $this->options, $this->client),
-    ];
-
-    $responses = Promise\wait(Promise\all($promises));
-    dump($responses);
-    exit;
-    foreach ($responses as $url => $response) {
-        \printf("Read %d bytes from %s\n", \strlen($response), $url);
-    }
-    exit;
-    ################### END
-
-    //READ: https://medium.com/@ardanirohman/how-to-handle-async-request-concurrency-with-promise-in-guzzle-6-cac10d76220e
 
 
-    $promiseList = [
-      $this->fetchBookPromise(),
-      $this->fetchBookPromise(true)
-    ];
-    $promises = (function () use ($promiseList) {
-      foreach ($promiseList as $p) {
-        // don't forget using generator
-        yield $p;//$this->getAsync('https://api.demo.com/v1/users?username=' . $user);		
-      }
-    })();
-    
-    
-    $eachPromise = new EachPromise($promises, [
-      // how many concurrency we are use
-      'concurrency' => 2,
-      'fulfilled' => function (string $response) {
-          dump($response);
-        },
-      'rejected' => function ($reason) {
-        // handle promise rejected here
-      }
-    ]);
-    
-    $eachPromise->promise()->wait();
-
-
-
-
-
-
-
-
-
-
-
-
-
-    ###################### 
-    exit;
-    //$called = 0;
-    //$rejected = 0;
 
     $then = microtime(true);
 
+    $orderbook = $this->fetchBook();
+    $orderbookReverse = $this->fetchBook();
+
     $promises = [
-      $this->fetchBookPromise(),
-      $this->fetchBookPromise(true)
+      'fwd' => $orderbook->requestAsync(),
+      'rev' => $orderbookReverse->requestAsync()
     ];
    
     $each = new EachPromise($promises, [
@@ -226,36 +117,36 @@ class LiquidityCheck
     //dump($results);exit;
     $promiseResults = P\Utils::all($promises)->wait();//$each->promise()->wait(); //see unwrap
     //$promiseResults = $each->promise()->wait();
-    echo 'Took: ' . (microtime(true) - $then);
-    dump($promiseResults);exit;
-    foreach ($promiseResults as $k => $v) {
-      dump($v['value']);exit;
-      //$response = value['value']->getBody()->getContents();
-      //$header = value['value']->getHeader();
-  }
 
+    $orderbook->fill($promiseResults['fwd']);
+    $orderbookReverse->fill($promiseResults['rev']);
 
-    dump($called,$rejected, $p);exit;
-    dump($called);
+    if(!$orderbook->isSuccess()) {
+      //XRPL response is returned but field result.status did not return 'success'
 
+      if(isset($orderbook->result()->result->error_message))
+        throw new \Exception($orderbook->result()->result->error_message);
+      else
+        throw new \Exception(\json_encode($orderbook->result()));
+    }
 
+    if(!$orderbookReverse->isSuccess()) {
+      //XRPL response is returned but field result.status did not return 'success'
 
-    $promises = [];
-    $promise1 = new Promise();
-    $promise2 = new Promise();
-    $called = [];
-    $each = new \GuzzleHttp\Promise\EachPromise($promises, [
-      'fulfilled' => function ($value) use (&$called) {
-          $called[] = $value;
-      }
-  ]);
-  die('35');
+      if(isset($orderbookReverse->result()->result->error_message))
+        throw new \Exception($orderbookReverse->result()->result->error_message);
+      else
+        throw new \Exception(\json_encode($orderbookReverse->result()));
+    }
 
-    $this->fetchBook();
-    $this->fetchBook(true);
-    $book1 = LiquidityParser::parse($this->book,        $this->trade['from'], $this->trade['to'], $this->trade['amount'], $this->options['rates']);
-    $book2 = LiquidityParser::parse($this->bookReverse, $this->trade['from'], $this->trade['to'], $this->trade['amount'], ($this->options['rates'] == 'to' ? 'from':'to'));
-    dump($book1,$book2);
+    $book = $orderbook->finalResult(); //array response from ledger
+    $bookReverse = $orderbook->finalResult(); //array response from ledger
+    
+   
+
+    $book1 = LiquidityParser::parse($book,        $this->trade['from'], $this->trade['to'], $this->trade['amount'], $this->options['rates']);
+    $book2 = LiquidityParser::parse($bookReverse, $this->trade['from'], $this->trade['to'], $this->trade['amount'], ($this->options['rates'] == 'to' ? 'from':'to'));
+    //dump($book1,$book2);
     $errors = $this->detectErrors($book1,$book2);
     $finalBookLine = (count($book1)) ? \end($book1) : null;
 
@@ -284,9 +175,39 @@ class LiquidityCheck
   {
     $this->book = [];
     $this->bookReverse = [];
-    $this->bookExecuted = false;
-    $this->bookReverseExecuted = false;
     return $this;
+  }
+
+  /**
+   * Returns Promise to query book_offers
+   * @return XRPLWin\XRPL\Api\Methods\BookOffers
+   */
+  private function fetchBook(bool $reverse = false)
+  {
+    if($this->trade['from'] === $this->trade['to'])
+      return;
+
+    //prevent re-querying
+    if(!$reverse && $this->bookExecuted) 
+      return;
+    else if($this->bookReverseExecuted)
+      return;
+
+    if(!$reverse) {
+      $from = $this->trade['from'];
+      $to = $this->trade['to'];
+    } else {
+      $from = $this->trade['to'];
+      $to = $this->trade['from'];
+    }
+
+    $orderbook = $this->client->api('book_offers')->params([
+      'taker_gets' => $to,
+      'taker_pays' => $from,
+      'limit' => $this->options['maxBookLines']
+    ]);
+
+    return $orderbook;
   }
 
   /**
@@ -296,7 +217,7 @@ class LiquidityCheck
    * @throws \XRPLWin\XRPL\Exceptions\XWException
    * @return void
    */
-  public static function fetchBook($reverse = false, array $trade, array $options, $client)
+  /*public static function fetchBook($reverse = false, array $trade, array $options, $client)
   {
     if($trade['from'] === $trade['to'])
       return;
@@ -310,7 +231,6 @@ class LiquidityCheck
     }
     
 
-    /** @var \XRPLWin\XRPL\Methods\BookOffers */
     $orderbook = $client->api('book_offers')->params([
       'taker_gets' => $to,
       'taker_pays' => $from,
@@ -334,7 +254,7 @@ class LiquidityCheck
       return;
     }
     return $orderbook->finalResult(); //array response from ledger 
-  }
+  }*/
 
   /**
    * Queries XRPL and gets results of book_offers
