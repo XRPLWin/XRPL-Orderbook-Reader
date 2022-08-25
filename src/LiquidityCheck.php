@@ -2,9 +2,11 @@
 
 namespace XRPLWin\XRPLOrderbookReader;
 use XRPLWin\XRPL\Client as XRPLWinClient;
+use XRPLWin\XRPL\Exceptions\BadRequestException;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use GuzzleHttp\Promise as P;
+
 
 class LiquidityCheck
 {
@@ -84,6 +86,7 @@ class LiquidityCheck
   
   /**
    * Fetches orderbook and reverse orderbook then calculates exchange rate, checks for errors.
+   * @throws \Exception
    * @return array [rate,safe,errors]
    */
   public function get(): array
@@ -98,24 +101,38 @@ class LiquidityCheck
 
     $promiseResults = P\Utils::all($promises)->wait();//$each->promise()->wait(); //see unwrap
 
-    $orderbook->fill($promiseResults['fwd']);
-    $orderbookReverse->fill($promiseResults['rev']);
+    try {
+      $orderbook->fill($promiseResults['fwd']);
+    } catch (BadRequestException) {
+      //
+    }
 
+    try {
+      $orderbookReverse->fill($promiseResults['rev']);
+    } catch (BadRequestException) {
+      //
+    }
+  
     if(!$orderbook->isSuccess()) {
-      //XRPL response is returned but field result.status did not return 'success'
-
-      if(isset($orderbook->result()->result->error_message))
-        throw new \Exception($orderbook->result()->result->error_message);
-      else
-        throw new \Exception(\json_encode($orderbook->result()));
+      if($orderbook->getIsExecutedWithError())
+        throw new \Exception('Http request failed with status code '.$orderbook->getExecutedWithErrorCode());
+      else {
+        if(isset($orderbook->result()->result->error_message))
+          throw new \Exception($orderbook->result()->result->error_message);
+        else
+          throw new \Exception(\json_encode($orderbook->result()));
+      }
     }
 
     if(!$orderbookReverse->isSuccess()) {
-      //XRPL response is returned but field result.status did not return 'success'
-      if(isset($orderbookReverse->result()->result->error_message))
-        throw new \Exception($orderbookReverse->result()->result->error_message);
-      else
-        throw new \Exception(\json_encode($orderbookReverse->result()));
+      if($orderbookReverse->getIsExecutedWithError())
+        throw new \Exception('Http request failed with status code '.$orderbookReverse->getExecutedWithErrorCode());
+      else {
+        if(isset($orderbookReverse->result()->result->error_message))
+          throw new \Exception($orderbookReverse->result()->result->error_message);
+        else
+          throw new \Exception(\json_encode($orderbookReverse->result()));
+      }
     }
 
     $book = $orderbook->finalResult(); //array response from ledger

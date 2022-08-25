@@ -6,7 +6,8 @@ require __DIR__ . '/vendor/autoload.php';
 use \XRPLWin\XRPL\Client;
 use \XRPLWin\XRPLOrderbookReader\LiquidityCheck;
 
-
+//https://api.onthedex.live/public/v1/ticker/XRP:USD.rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq
+//https://xrpl.win/api/ticker/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq/USD
 
 $client = new Client([
   'endpoint_reporting_uri' => 'https://xrplcluster.com'
@@ -17,10 +18,10 @@ $lc = new LiquidityCheck([
   'from' => [
       'currency' => 'XRP'
   ],
-  'amount' => 100000,
+  'amount' => 100,
   'to' => [
-      'currency' => 'USD',
-      'issuer' => 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq'
+      'currency' => '534F4C4F00000000000000000000000000000000',
+      'issuer' => 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz'
   ],
 ],
 [
@@ -29,8 +30,8 @@ $lc = new LiquidityCheck([
   'maxSpreadPercentage' => 0.0001,
   'maxSlippagePercentage' => 0.0001,
   'maxSlippagePercentageReverse' => 0.0001,
-  'includeBookData' => false,
-  'maxBookLines' => 10
+  'includeBookData' => true,
+  'maxBookLines' => 1
 ],
 $client);
 

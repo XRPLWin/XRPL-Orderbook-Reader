@@ -6,7 +6,7 @@ use Brick\Math\RoundingMode;
 
 class LiquidityParser
 {
-  const PRECISION = 20;
+  const PRECISION = 16;
   const ROUNDING_MODE = RoundingMode::HALF_UP;
   /**
    * This methods takes XRPL Orderbook (book_offers) datasets and requested
