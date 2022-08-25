@@ -50,9 +50,18 @@ $lc = new LiquidityCheck([
     'includeBookData' => true //default false
 ], $xrplwinapiclient);
 
-$Liquidity = $lc->get();
+try {
+    $Liquidity = $lc->get();
+} catch (\Exception) {
+    //Unable to connect to provided XRPL server...
+    $Liquidity = [
+        'rate' => null,
+        'safe' => false,
+        'errors' => ['CONNECT_ERROR']
+    ];
+}
 
-print_r($Liquidity);
+print_r($Liquidity); //['rate' => NUMBER, 'safe' => BOOLEAN, 'errors' => ARRAY]
 ```
 ## Running tests
 Run all tests in "tests" directory.
