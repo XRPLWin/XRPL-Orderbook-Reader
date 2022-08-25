@@ -136,11 +136,11 @@ class LiquidityCheck
     }
 
     $book = $orderbook->finalResult(); //array response from ledger
-    $bookReverse = $orderbook->finalResult(); //array response from ledger
-    
+    $bookReverse = $orderbookReverse->finalResult(); //array response from ledger
+
     $book1 = LiquidityParser::parse($book,        $this->trade['from'], $this->trade['to'], $this->trade['amount'], $this->options['rates']);
     $book2 = LiquidityParser::parse($bookReverse, $this->trade['from'], $this->trade['to'], $this->trade['amount'], ($this->options['rates'] == 'to' ? 'from':'to'));
-    //dump($book1,$book2);
+    
     $errors = $this->detectErrors($book1,$book2);
     $finalBookLine = (count($book1)) ? \end($book1) : null;
 
@@ -194,7 +194,11 @@ class LiquidityCheck
       $from = $this->trade['to'];
       $to = $this->trade['from'];
     }
-
+    /*dump([
+      'taker_gets' => $to,
+      'taker_pays' => $from,
+      'limit' => $this->options['maxBookLines']
+    ]);exit;*/
     $orderbook = $this->client->api('book_offers')->params([
       'taker_gets' => $to,
       'taker_pays' => $from,

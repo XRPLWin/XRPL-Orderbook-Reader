@@ -75,7 +75,7 @@ class LiquidityParser
       $_PaysEffective = isset($b['taker_gets_funded']) ? self::parseAmount($b['taker_gets_funded']) : self::parseAmount($b['TakerGets']);
       /** @var \Brick\Math\BigDecimal */
       $_GetsEffective = isset($b['taker_pays_funded']) ? self::parseAmount($b['taker_pays_funded']) : self::parseAmount($b['TakerPays']);
-
+      
       /** @var \Brick\Math\BigDecimal */
       $_GetsSum = $_GetsEffective->plus( (($i > 0) ? clone $a[$i-1]['_I_Spend'] : BigDecimal::of(0)) );
       /** @var \Brick\Math\BigDecimal */
@@ -83,7 +83,7 @@ class LiquidityParser
 
       $_cmpField = ($bookType == 'source') ? '_I_Spend_Capped':'_I_Get_Capped';
 
-     
+      
       /** @var \Brick\Math\BigDecimal|null */
       $_GetsSumCapped = ($i > 0 && $a[$i-1][$_cmpField] !== null && $a[$i-1][$_cmpField]->isGreaterThanOrEqualTo($amount) )
         ? clone $a[$i-1]['_I_Spend_Capped']

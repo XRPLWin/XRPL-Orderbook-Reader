@@ -18,24 +18,34 @@ use function PHPSTORM_META\map;
 
 final class CalculatorTest extends TestCase
 {
-  public function testCalculationsShouldBeCorrect()
+  public function testCalculatedTradesShouldBeInEquilibrium()
   {
-    $from = ['currency' => 'XRP'];
-    $to =  [ 'currency' => 'USD', 'issuer' => 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq'];
+    $from = ['currency' => 'EUR', 'issuer' => 'rb'];
+    $to =  [ 'currency' => 'USD', 'issuer' => 'ra'];
     $offersFromTo = [
-      //From => To
-      ['10','100'],
-      ['10','100'],
+      //with 22 xrp buy 333 usd
+      ['22','333'],
+      ['22','333'],
+      ['22','333'],
+      ['22','333'],
     ];
     $offersToFrom = [
-      //To => From
-      ['80', '24'],
-      ['70', '22'],
+      //with 88 usd buy 22 xrp
+      ['333','22'],
+      ['333','22'],
+      ['333','22'],
+      ['333','22'],
     ];
-    $result = $this->calculate('10',$from, $to, $offersFromTo, $offersToFrom);
-    $this->renderTable($result);
+    $result = $this->calculate('800',$from, $to, $offersFromTo, $offersToFrom);
 
-    //dump($result);exit;
+    # Debug
+    $this->renderTable($result);
+    echo 'Rate: '.$result['rate'].' Safe: '.(int)$result['safe'];
+    echo ' | '.\implode(' | ', $result['errors']);
+    # End Debug
+    exit;
+
+    $this->assertEquals(10,$result['rate']);
   }
 
   /**
@@ -44,10 +54,12 @@ final class CalculatorTest extends TestCase
    */
   public function calculate(string $amount, array $from, array $to, array $offersFromTo, array $offersToFrom): array
   {
-    dump($this->buildBookOffersJson([$from,$to],$offersFromTo));Exit;
+    dump($this->buildBookOffersJson([$to,$from],$offersFromTo));
+    dump($this->buildBookOffersJson([$from,$to],$offersToFrom));
+    
     $mock = new MockHandler([
-      new Response(200, ['Content-Type' => 'application/json'], $this->buildBookOffersJson([$from,$to],$offersFromTo)),
-      new Response(200, ['Content-Type' => 'application/json'], $this->buildBookOffersJson([$to,$from],$offersToFrom)),
+      new Response(200, ['Content-Type' => 'application/json'], $this->buildBookOffersJson([$to,$from],$offersFromTo)),
+      new Response(200, ['Content-Type' => 'application/json'], $this->buildBookOffersJson([$from,$to],$offersToFrom)),
     ]);
 
     $handlerStack = HandlerStack::create($mock);
@@ -64,7 +76,7 @@ final class CalculatorTest extends TestCase
     ],
     $client);
 
-    dump($lc->get());exit;
+    //dump($lc->get());exit;
     return $lc->get();
   }
 
@@ -79,13 +91,13 @@ final class CalculatorTest extends TestCase
     {
       $TakerGets = [];
       if(count($from_to[1]) === 1)
-        $TakerGets = $v[1]*1000000; //drops to xrp
+        $TakerGets = (string)($v[1]*1000000); //xrp to drops
       else 
         $TakerGets = ['currency' => $from_to[1]['currency'], 'issuer' => $from_to[1]['issuer'],'value' => $v[1]];
 
       $TakerPays = [];
       if(count($from_to[0]) === 1)
-        $TakerPays = $v[0]*1000000; //drops to xrp
+        $TakerPays = (string)($v[0]*1000000); //xrp to drops
       else
         $TakerPays = ['currency' => $from_to[0]['currency'], 'issuer' => $from_to[0]['issuer'], 'value' => $v[0]];
 
@@ -112,10 +124,11 @@ final class CalculatorTest extends TestCase
    */
   private function renderTable(array $data): void
   {
-    $table = new \LucidFrame\Console\ConsoleTable();
+    
 
     foreach($data['books'] as $books)
     {
+      $table = new \LucidFrame\Console\ConsoleTable();
       $i = 0;
       foreach($books as $book) {
         if($i == 0) {
@@ -125,11 +138,22 @@ final class CalculatorTest extends TestCase
         }
         $table->addRow();
         foreach($book as $v) {
-          $table->addColumn((string)$v);
+          if($v instanceof \Brick\Math\BigDecimal || !is_object($v)) {
+            if(is_bool($v))
+              $table->addColumn(($v?'true':'false'));
+            else
+              $table->addColumn((string)$v);
+            
+          } else {
+            $table->addColumn(
+              'Value: '.$v->value
+            );
+          }
         }
         $i++;
       }
+      $table->display();
     }
-    $table->display();
+    
   }
 }
