@@ -35,9 +35,7 @@ final class ReaderTest extends TestCase
 
         $httpClient = new HttpClient(['handler' => $handlerStack]);
 
-        $client = new Client([
-            'endpoint_reporting_uri' => 'https://xrplcluster.com'
-        ],$httpClient);
+        $client = new Client([],$httpClient);
 
         $lc = new LiquidityCheck([
             # Trade:
@@ -177,10 +175,5 @@ final class ReaderTest extends TestCase
             'REVERSE_LIQUIDITY_NOT_AVAILABLE',
             'MAX_SPREAD_EXCEEDED'
         ],$Liquidity['errors']);
-    }
-
-    public function testCalculationsShouldBeCorrect()
-    {
-        $this->assertTrue(true);
     }
 }
