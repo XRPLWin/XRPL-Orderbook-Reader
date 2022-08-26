@@ -44,9 +44,8 @@ class LiquidityParser
         $bookType = 'source';
       else
         $bookType = 'return';
-
     }
-    //echo $bookType.PHP_EOL;
+
     $offers_filtered = [];
     
     foreach($offers as $offer)
@@ -63,7 +62,7 @@ class LiquidityParser
     
     $amount = BigDecimal::of($amount);//dd($amount);
     $i = 0;
-    //$reduceFiltered = [];
+
     /**
      * @param $a array of offers
      * @param $b object one offer
@@ -74,10 +73,10 @@ class LiquidityParser
 
       /** @var \Brick\Math\BigDecimal */
       $_PaysEffective = isset($b['taker_gets_funded']) ? self::parseAmount($b['taker_gets_funded']) : self::parseAmount($b['TakerGets']);
-      //dump((string)$_PaysEffective);
+
       /** @var \Brick\Math\BigDecimal */
       $_GetsEffective = isset($b['taker_pays_funded']) ? self::parseAmount($b['taker_pays_funded']) : self::parseAmount($b['TakerPays']);
-      //dump((string)$_GetsEffective);
+
       /** @var \Brick\Math\BigDecimal */
       $_GetsSum = $_GetsEffective->plus( (($i > 0) ? clone $a[$i-1]['_I_Spend'] : BigDecimal::of(0)) );
       
@@ -104,19 +103,8 @@ class LiquidityParser
         if($_Capped === false && $_GetsSumCapped !== null && $_GetsSumCapped->isGreaterThan($amount)) {
           
           $_GetsCap = BigDecimal::of(1)->minus( $_GetsSumCapped->minus($amount)->dividedBy($_GetsSumCapped,self::PRECISION,self::ROUNDING_MODE) );
-          /*dump(
-            (string)$amount,
-            (string)$_GetsSumCapped->minus($amount),
-            (string)$_GetsSumCapped,
-            $_GetsCap
-          );*/
           $_GetsSumCapped = $_GetsSumCapped->multipliedBy($_GetsCap);
-          //dump((string)$_GetsCap);
-          //dump((string)$_GetsSumCapped);
-          //dump((string)$_PaysSumCapped);
           $_PaysSumCapped = $_PaysSumCapped->multipliedBy($_GetsCap);
-          //dump((string)$_PaysSumCapped);
-          //dump((string)$_GetsCap);
           $_Capped = true;
 
         }
@@ -124,7 +112,6 @@ class LiquidityParser
         if($_Capped === false && $_PaysSumCapped !== null && $_PaysSumCapped->isGreaterThan($amount)) {
 
           $_PaysCap = BigDecimal::of(1)->minus( $_PaysSumCapped->minus($amount)->dividedBy($_PaysSumCapped,self::PRECISION,self::ROUNDING_MODE) );
-          //dump((string)$_PaysCap);
           $_GetsSumCapped = $_GetsSumCapped->multipliedBy($_PaysCap);
           $_PaysSumCapped = $_PaysSumCapped->multipliedBy($_PaysCap);
           $_Capped = true;
@@ -133,7 +120,6 @@ class LiquidityParser
       }
 
       if($_Capped !== null/* && $_PaysSumCapped !== null && $_PaysSumCapped->isGreaterThan(0)*/) {
-        //dump("TRUE");
         $_CumulativeRate_Cap = $_GetsSumCapped->dividedBy($_PaysSumCapped,self::PRECISION,self::ROUNDING_MODE);
       }
 
@@ -145,11 +131,6 @@ class LiquidityParser
       }
 
       if($_GetsSum->isGreaterThan(0) && $_PaysSum->isGreaterThan(0)) {
-
-        //test
-        //$a = (string)BigDecimal::of('10.11111111111111111111')->toScale(self::PRECISION-1,self::ROUNDING_MODE);
-        //dump($a);exit;
-        
         $b['_I_Spend'] = $_GetsSum;
         $b['_I_Get'] = $_PaysSum;
         $b['_ExchangeRate']       = ($_PaysEffective->isEqualTo(0)) ? null : $_GetsEffective->dividedBy($_PaysEffective,self::PRECISION,self::ROUNDING_MODE); // BigDecimal
@@ -158,7 +139,7 @@ class LiquidityParser
         $b['_I_Get_Capped']       = $_PaysSumCapped === null ? null : $_PaysSumCapped->toScale(self::NATURAL_PRECISION,self::ROUNDING_MODE);                  // null|BigDecimal
         $b['_CumulativeRate_Cap'] = $_CumulativeRate_Cap === null ? null : $_CumulativeRate_Cap->toScale(self::NATURAL_PRECISION,self::ROUNDING_MODE);        // null|BigDecimal
         $b['_Capped']             = $_Capped;                                                                                                                 // null|bool
-        //dump((string)$_PaysSumCapped,(string)$b['_I_Get_Capped']);
+
         //Reverse rate output
         if($rates == 'to')
         {
