@@ -16,15 +16,7 @@ class LiquidityCheck
   const ERROR_MAX_SLIPPAGE_EXCEEDED = 'MAX_SLIPPAGE_EXCEEDED';
   const ERROR_MAX_REVERSE_SLIPPAGE_EXCEEDED = 'MAX_REVERSE_SLIPPAGE_EXCEEDED';
 
-  const PRECISION = 17;
-  /**
-   * PRECISION_CAPPED:
-   * Due to divisions, calculated values must be rounded to PRECISION, 
-   * sum of fields _I_Spend_Capped and _I_Get_Capped can be very close approximation of 
-   * TradeAmount. To create correct comparison of TradeAmount === _I_Spend_Capped or _I_Get_Capped,
-   * those fields are rounded to ROUNDING_MODE of PRECISION_CAPPED precision.
-   */
-  const PRECISION_CAPPED = 10;
+  const NATURAL_PRECISION = 17;
   const ROUNDING_MODE = RoundingMode::HALF_UP;
 
   protected XRPLWinClient $client;
@@ -270,7 +262,7 @@ class LiquidityCheck
     }
 
     if($this->options['maxSpreadPercentage']) {
-      $spread = BigDecimal::one()->minus(  $startRate->dividedBy($startRateReverse,self::PRECISION,self::ROUNDING_MODE) )->multipliedBy(100)->abs();
+      $spread = BigDecimal::one()->minus(  $startRate->dividedBy($startRateReverse,self::NATURAL_PRECISION,self::ROUNDING_MODE) )->multipliedBy(100)->abs();
 
       //todo: log
 
@@ -279,7 +271,7 @@ class LiquidityCheck
     }
 
     if($this->options['maxSlippagePercentage']) {
-      $slippage = BigDecimal::one()->minus(  $startRate->dividedBy($finalRate,self::PRECISION,self::ROUNDING_MODE) )->multipliedBy(100)->abs();
+      $slippage = BigDecimal::one()->minus(  $startRate->dividedBy($finalRate,self::NATURAL_PRECISION,self::ROUNDING_MODE) )->multipliedBy(100)->abs();
       //die((string)$finalRate);
       //todo: log
 
@@ -288,7 +280,7 @@ class LiquidityCheck
     }
 
     if($this->options['maxSlippagePercentageReverse']) {
-      $slippage = BigDecimal::one()->minus(  $startRateReverse->dividedBy($finalRateReverse,self::PRECISION,self::ROUNDING_MODE) )->multipliedBy(100)->abs();
+      $slippage = BigDecimal::one()->minus(  $startRateReverse->dividedBy($finalRateReverse,self::NATURAL_PRECISION,self::ROUNDING_MODE) )->multipliedBy(100)->abs();
 
       //todo: log
 

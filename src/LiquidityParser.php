@@ -200,7 +200,7 @@ class LiquidityParser
       unset($v['_I_Spend']);
       unset($v['_I_Get']);
       unset($v['taker_pays_funded']);
-
+      unset($v['taker_gets_funded']);
       unset($v['index']);
       unset($v['owner_funds']);
       unset($v['quality']);

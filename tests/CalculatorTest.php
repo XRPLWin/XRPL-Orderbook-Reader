@@ -367,7 +367,7 @@ final class CalculatorTest extends TestCase
             
           } else {
             $table->addColumn(
-              'Value: '.$v->value
+              $v->value
             );
           }
         }
