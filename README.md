@@ -66,7 +66,7 @@ try {
     ];
 }
 
-print_r($Liquidity); //['rate' => NUMBER, 'safe' => BOOLEAN, 'errors' => ARRAY]
+print_r($Liquidity); //['rate' => NUMBER, 'safe' => BOOLEAN, 'errors' => ARRAY, 'books' => ARRAY]
 ```
 ## Running tests
 Run all tests in "tests" directory.
@@ -77,3 +77,7 @@ or
 ```
 ./vendor/bin/phpunit --testdox
 ```
+
+### Sample
+
+See [dev.php](dev.php) for sample.
