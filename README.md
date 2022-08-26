@@ -1,4 +1,4 @@
-![main workflow](https://github.com/XRPLWin/XRPL-Orderbook-Reader/actions/workflows/main.yml/badge.svg)
+[![CI workflow](https://github.com/XRPLWin/XRPL-Orderbook-Reader/actions/workflows/main.yml/badge.svg)](https://github.com/XRPLWin/XRPL-Orderbook-Reader/actions/workflows/main.yml)
 [![GitHub license](https://img.shields.io/github/license/XRPLWin/XRPL-Orderbook-Reader)](https://github.com/XRPLWin/XRPL-Orderbook-Reader/blob/main/LICENSE)
 [![Total Downloads](https://img.shields.io/packagist/dt/xrplwin/xrpl-orderbook-reader.svg?style=flat)](https://packagist.org/packages/xrplwin/xrpl-orderbook-reader)
 

@@ -91,7 +91,7 @@ class LiquidityCheck
       'rev' => $orderbookReverse->requestAsync()
     ];
 
-    $promiseResults = P\Utils::all($promises)->wait();//$each->promise()->wait(); //see unwrap
+    $promiseResults = P\Utils::all($promises)->wait();
 
     try {
       $orderbook->fill($promiseResults['fwd']);
@@ -186,11 +186,7 @@ class LiquidityCheck
       $from = $this->trade['to'];
       $to = $this->trade['from'];
     }
-    /*dump([
-      'taker_gets' => $to,
-      'taker_pays' => $from,
-      'limit' => $this->options['maxBookLines']
-    ]);exit;*/
+
     $orderbook = $this->client->api('book_offers')->params([
       'taker_gets' => $to,
       'taker_pays' => $from,
@@ -208,7 +204,6 @@ class LiquidityCheck
    */
   private function detectErrors(array $book, array $bookReversed): array
   {
-    //dump(count($this->book),count($bookReversed));
     # Check for orders existance
     $errors = [];
     if(!count($book)) {
@@ -223,14 +218,9 @@ class LiquidityCheck
     # Prepeare parameters
     $amount = $this->trade['amount'];
 
-    
-
     $bookAmount = $book[count($book)-1]['_I_Spend_Capped'];
     $bookReversedAmount = $bookReversed[count($bookReversed)-1]['_I_Get_Capped'];
 
-    //dump((string)$bookAmount);
-    //dump((string)$bookReversedAmount);
-    //dump($book[count($book)-1], $bookReversed[count($bookReversed)-1]);
     $firstBookLine = $book[0];
     $finalBookLine = \end($book);
 
@@ -241,22 +231,17 @@ class LiquidityCheck
     
     $firstBookLineReverse = $bookReversed[0];
     $finalBookLineReverse = \end($bookReversed);
-    
+
     /** @var \Brick\Math\BigDecimal */
     $startRateReverse = ($firstBookLineReverse['_CumulativeRate_Cap']) ? $firstBookLineReverse['_CumulativeRate_Cap'] : $firstBookLineReverse['_CumulativeRate'];
     /** @var \Brick\Math\BigDecimal */
     $finalRateReverse = ($finalBookLineReverse['_CumulativeRate_Cap']) ? $finalBookLineReverse['_CumulativeRate_Cap'] : $finalBookLineReverse['_CumulativeRate'];
    
-    //dump((string)$startRateReverse);
-    //dump((string)$finalRateReverse);
     # Check for errors
     if(!$bookAmount->isEqualTo($amount)) {
       $errors[] = self::ERROR_REQUESTED_LIQUIDITY_NOT_AVAILABLE;
     }
     
-    //echo (string)$amount.' = '.((string)$bookAmount);
-    //print_r(\end($bookReversed)['_I_Get_Capped']);
-    //exit;
     if(!$bookReversedAmount->isEqualTo($amount)) {
       $errors[] = self::ERROR_REVERSE_LIQUIDITY_NOT_AVAILABLE;
     }
@@ -272,7 +257,7 @@ class LiquidityCheck
 
     if($this->options['maxSlippagePercentage']) {
       $slippage = BigDecimal::one()->minus(  $startRate->dividedBy($finalRate,self::NATURAL_PRECISION,self::ROUNDING_MODE) )->multipliedBy(100)->abs();
-      //die((string)$finalRate);
+
       //todo: log
 
       if($slippage->isGreaterThan($this->options['maxSlippagePercentage']))
