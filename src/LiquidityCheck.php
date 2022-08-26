@@ -92,7 +92,7 @@ class LiquidityCheck
   public function get(): array
   {
     $orderbook = $this->fetchBook();
-    $orderbookReverse = $this->fetchBook();
+    $orderbookReverse = $this->fetchBook(true);
 
     $promises = [
       'fwd' => $orderbook->requestAsync(),

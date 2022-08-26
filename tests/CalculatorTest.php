@@ -345,7 +345,7 @@ final class CalculatorTest extends TestCase
    * Renders book data to console for debugging
    * @return void
    */
-  private function renderTable(array $data): void
+  public function renderTable(array $data): void
   {
     foreach($data['books'] as $books)
     {

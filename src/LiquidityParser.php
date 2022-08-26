@@ -187,6 +187,27 @@ class LiquidityParser
       if($v['_Capped'] === null) continue;
       if(!isset($v['_ExchangeRate'])) continue;
       if($v['_ExchangeRate'] === null) continue;
+
+      unset($v['Account']);
+      unset($v['BookNode']);
+      unset($v['Flags']);
+      unset($v['LedgerEntryType']);
+      unset($v['OwnerNode']);
+      unset($v['PreviousTxnID']);
+      unset($v['PreviousTxnLgrSeq']);
+      unset($v['Expiration']);
+      unset($v['Sequence']);
+      unset($v['_I_Spend']);
+      unset($v['_I_Get']);
+      unset($v['taker_pays_funded']);
+
+      unset($v['index']);
+      unset($v['owner_funds']);
+      unset($v['quality']);
+      unset($v['_ExchangeRate']);
+      unset($v['TakerGets']);
+      unset($v['TakerPays']);
+      
       $reducedFiltered[] = $v;
     }
     
