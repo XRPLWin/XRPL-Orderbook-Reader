@@ -16,7 +16,7 @@ of the order book.
 # Note
 
 This package is provided as is, please test it yourself first.  
-Found issues? [Report issue here](https://github.com/XRPLWin/XRPL-Orderbook-Reader/issues/new)
+Found a bug? [Report issue here](https://github.com/XRPLWin/XRPL-Orderbook-Reader/issues/new)
 
 ## Requirements
 - PHP 8.1 or higher
