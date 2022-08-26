@@ -121,23 +121,18 @@ final class ReaderTest extends TestCase
         [
             # Options:
             'rates' => 'to',
-            'maxSpreadPercentage' => 0.0001,
-            'maxSlippagePercentage' => 0.0001,
-            'maxSlippagePercentageReverse' => 0.0001,
+            'maxSpreadPercentage' => 0.000001,
+            'maxSlippagePercentage' => 0.000001,
+            'maxSlippagePercentageReverse' => 0.000001,
             'includeBookData' => false,
-            'maxBookLines' => 100
+            'maxBookLines' => 500
         ],
         $client);
 
         $Liquidity = $lc->get();
-        //print_r($Liquidity['errors']);
-        $this->assertEquals([
-            //'REQUESTED_LIQUIDITY_NOT_AVAILABLE',
-            'REVERSE_LIQUIDITY_NOT_AVAILABLE',
-            'MAX_SPREAD_EXCEEDED',
-            //'MAX_SLIPPAGE_EXCEEDED',
-            //'MAX_REVERSE_SLIPPAGE_EXCEEDED'
-        ],$Liquidity['errors']);
+        $this->assertContains('MAX_SPREAD_EXCEEDED',$Liquidity['errors']);
+        $this->assertContains('MAX_SLIPPAGE_EXCEEDED',$Liquidity['errors']);
+        $this->assertContains('MAX_REVERSE_SLIPPAGE_EXCEEDED',$Liquidity['errors']);
     }
 
     public function testShouldErrorOutWithInsufficientLiquidity(): void
@@ -151,7 +146,7 @@ final class ReaderTest extends TestCase
             'from' => [
                 'currency' => 'XRP'
             ],
-            'amount' => 1000,
+            'amount' => 1000000,
             'to' => [
                 'currency' => 'USD',
                 'issuer' => 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq'
@@ -164,16 +159,13 @@ final class ReaderTest extends TestCase
             'maxSlippagePercentage' => 2,
             'maxSlippagePercentageReverse' => 2,
             'includeBookData' => false,
-            'maxBookLines' => 100
+            'maxBookLines' => 1
         ],
         $client);
 
         $Liquidity = $lc->get();
+        $this->assertContains('REQUESTED_LIQUIDITY_NOT_AVAILABLE',$Liquidity['errors']);
+        $this->assertContains('REVERSE_LIQUIDITY_NOT_AVAILABLE',$Liquidity['errors']);
 
-        $this->assertEquals([
-            //'REQUESTED_LIQUIDITY_NOT_AVAILABLE',
-            'REVERSE_LIQUIDITY_NOT_AVAILABLE',
-            'MAX_SPREAD_EXCEEDED'
-        ],$Liquidity['errors']);
     }
 }

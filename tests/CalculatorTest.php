@@ -9,11 +9,6 @@ use XRPLWin\XRPLOrderbookReader\LiquidityCheck;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7;
-
-use function PHPSTORM_META\map;
-
-#use GuzzleHttp\Middleware;
 
 
 final class CalculatorTest extends TestCase
@@ -42,7 +37,6 @@ final class CalculatorTest extends TestCase
       echo 'Rate: '.$result['rate'].' Safe: '.(int)$result['safe'];
       echo ' | '.\implode(' | ', $result['errors']);
     }
-    //exit;
     # End Debug
 
     $this->assertEquals('0.91111111111111110909',$result['rate']);
@@ -75,7 +69,6 @@ final class CalculatorTest extends TestCase
       echo 'Rate: '.$result['rate'].' Safe: '.(int)$result['safe'];
       echo ' | '.\implode(' | ', $result['errors']);
     }
-    //exit;
     # End Debug
 
     $this->assertEquals(0,$result['rate']);
@@ -105,7 +98,6 @@ final class CalculatorTest extends TestCase
       echo 'Rate: '.$result['rate'].' Safe: '.(int)$result['safe'];
       echo ' | '.\implode(' | ', $result['errors']);
     }
-    //exit;
     # End Debug
 
     $this->assertEquals('1.53333333333333333538',$result['rate']);
@@ -161,7 +153,6 @@ final class CalculatorTest extends TestCase
       echo 'Rate: '.$result['rate'].' Safe: '.(int)$result['safe'];
       echo ' | '.\implode(' | ', $result['errors']);
     }
-    
     # End Debug
 
     $this->assertEquals(10,$result['rate']);
@@ -194,7 +185,6 @@ final class CalculatorTest extends TestCase
       echo 'Rate: '.$result['rate'].' Safe: '.(int)$result['safe'];
       echo ' | '.\implode(' | ', $result['errors']);
     }
-    
     # End Debug
 
     $this->assertEquals(10,$result['rate']);
@@ -231,7 +221,6 @@ final class CalculatorTest extends TestCase
       echo 'Rate: '.$result['rate'].' Safe: '.(int)$result['safe'];
       echo ' | '.\implode(' | ', $result['errors']);
     }
-    //exit;
     # End Debug
 
     $this->assertEquals(10,$result['rate']);
@@ -281,9 +270,9 @@ final class CalculatorTest extends TestCase
     if(self::DEBUG) {
       //JS Vars (for node testing):
       $jsvars1 = \json_decode($this->buildBookOffersJson([$to,$from],$offersFromTo));
-      $jsvars1 =\json_encode($jsvars1->result->offers);
+      $jsvars1 = \json_encode($jsvars1->result->offers);
       $jsvars2 = \json_decode($this->buildBookOffersJson([$from,$to],$offersToFrom));
-      $jsvars2 =\json_encode($jsvars2->result->offers);
+      $jsvars2 = \json_encode($jsvars2->result->offers);
       echo 'let bookData2 = [';
       echo $jsvars1.','.PHP_EOL.$jsvars2;
       echo ']';
@@ -300,10 +289,10 @@ final class CalculatorTest extends TestCase
     $httpClient = new HttpClient(['handler' => $handlerStack]);
     $client = new Client([],$httpClient);
     $lc = new LiquidityCheck([
-        # Trade:
-        'from' => $from,
-        'amount' => $amount,
-        'to' => $to
+      # Trade:
+      'from' => $from,
+      'amount' => $amount,
+      'to' => $to
     ],
     [
       'rates' => 'to',
