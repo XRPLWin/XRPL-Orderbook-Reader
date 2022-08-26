@@ -5,6 +5,7 @@ require __DIR__ . '/vendor/autoload.php';
 use \XRPLWin\XRPL\Client;
 use \XRPLWin\XRPLOrderbookReader\LiquidityCheck;
 
+//https://sologenic.org/trade?market=XRP%2F534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&network=mainnet
 //https://api.onthedex.live/public/v1/ticker/XRP:534F4C4F00000000000000000000000000000000.rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz
 //https://xrpl.win/api/ticker/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq/USD
 
