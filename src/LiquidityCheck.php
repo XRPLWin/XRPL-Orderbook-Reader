@@ -16,7 +16,7 @@ class LiquidityCheck
   const ERROR_MAX_SLIPPAGE_EXCEEDED = 'MAX_SLIPPAGE_EXCEEDED';
   const ERROR_MAX_REVERSE_SLIPPAGE_EXCEEDED = 'MAX_REVERSE_SLIPPAGE_EXCEEDED';
 
-  const PRECISION = 20;
+  const PRECISION = 17;
   /**
    * PRECISION_CAPPED:
    * Due to divisions, calculated values must be rounded to PRECISION, 
@@ -231,8 +231,13 @@ class LiquidityCheck
     # Prepeare parameters
     $amount = $this->trade['amount'];
 
+    
+
     $bookAmount = $book[count($book)-1]['_I_Spend_Capped'];
     $bookReversedAmount = $bookReversed[count($bookReversed)-1]['_I_Get_Capped'];
+
+    //dump((string)$bookAmount);
+    //dump((string)$bookReversedAmount);
     //dump($book[count($book)-1], $bookReversed[count($bookReversed)-1]);
     $firstBookLine = $book[0];
     $finalBookLine = \end($book);
@@ -250,15 +255,17 @@ class LiquidityCheck
     /** @var \Brick\Math\BigDecimal */
     $finalRateReverse = ($finalBookLineReverse['_CumulativeRate_Cap']) ? $finalBookLineReverse['_CumulativeRate_Cap'] : $finalBookLineReverse['_CumulativeRate'];
    
+    //dump((string)$startRateReverse);
+    //dump((string)$finalRateReverse);
     # Check for errors
-    if(!$bookAmount->toScale(self::PRECISION_CAPPED,self::ROUNDING_MODE)->isEqualTo($amount)) {
+    if(!$bookAmount->isEqualTo($amount)) {
       $errors[] = self::ERROR_REQUESTED_LIQUIDITY_NOT_AVAILABLE;
     }
     
     //echo (string)$amount.' = '.((string)$bookAmount);
     //print_r(\end($bookReversed)['_I_Get_Capped']);
     //exit;
-    if(!$bookReversedAmount->toScale(self::PRECISION_CAPPED,self::ROUNDING_MODE)->isEqualTo($amount)) {
+    if(!$bookReversedAmount->isEqualTo($amount)) {
       $errors[] = self::ERROR_REVERSE_LIQUIDITY_NOT_AVAILABLE;
     }
 
