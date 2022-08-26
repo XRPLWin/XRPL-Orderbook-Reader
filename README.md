@@ -13,12 +13,17 @@ Optionally certain checks can be specified (eg. `book_offers` on the other side 
 to warn for limited (percentage) liquidity on the requested side, and possibly other side
 of the order book.
 
+# Note
+
+This package is provided as is, please test it yourself first.  
+Found issues? [Report issue here](https://github.com/XRPLWin/XRPL-Orderbook-Reader/issues/new)
+
 ## Requirements
 - PHP 8.1 or higher
 - [Composer](https://getcomposer.org/)
 
 ## Installation
-This Package is still in **beta**, to install run
+To install run
 
 ```
 composer require xrplwin/xrpl-orderbook-reader
