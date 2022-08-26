@@ -56,7 +56,7 @@ $lc = new LiquidityCheck([
 
 try {
   $Liquidity = $lc->get();
-} catch (\Exception) {
+} catch (\Throwable) {
   //Unable to connect to provided XRPL server...
   $Liquidity = [
     'rate' => null,
