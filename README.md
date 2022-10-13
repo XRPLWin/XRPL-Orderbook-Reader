@@ -74,7 +74,6 @@ print_r($Liquidity);
  *   'books' => ARRAY
  * ]
  **/
-//
 ```
 ## Running tests
 Run all tests in "tests" directory.
